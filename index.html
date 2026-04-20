@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+        <title>
+         SDWSR University of Database & More
+        </title>
+        <link rel="sheetstyle" href="style.css">
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+        <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    </head>
+    <body>
+      <!--Navigation Bar-->  
+      <nav class="navbar" id="navbar">
+        <div class="nav-container">
+            <div class="logo">
+                <span class="logo-icon"></span>
+                <span class="logo-text">SDWSR University</span>
+                <span class="logo-tagline">of Database</span>
+            </div>
+
+            <div class="nav-menu" id="navMenu">
+                <a href="#home" class="nav-link active">Home</a>
+                <a href="#courses" class="nav-link">Courses</a>
+                <a href="ai-tech" class="nav-link">AI & Tech</a>
+                <a href="#finance" class="nav-link">Finance</a>
+                <a href="#Prgramming" class="nav-link">programming</a>
+                <a href="#databases" class="nav-link">databases</a>
+                <a href="#webdev" class="nav-link">Web Dev</a>
+                <a href="dashboard" class="nav-link">Dashboard</a>
+
+            </div>
+
+            <div class="nav-actions">
+                <button id="themeToggle" class="theme-btn"></button>
+                <button id="authBtn" class="auth-btn">Login</button>
+                <div class=<"mobile-menu-btn" id="mobileMenuBtn">
+                    <span></span><span></span><span></span>
+                </div>
+            </div>
+      </nav>
+      <!-- Hero Section-->
+       <section id="home" class="hero">
+        <div class="hero-content">
+            <h1 class="hero-title">
+                Master<span class="gradient-text">Al,Tech & Finance</span>
+                <br>at SDWSR University
+
+            </h1>
+            <p class="hero-subtitle">
+                Join over 50,000+ students learning cutting -edge skills in Artificial Intelligence, Financial Technology, Database Management, and Web Development
+            </p>
+            <div class="hero-button">
+                <button class="btn-primary"onclick="scrollToSection('courses')">Start Learning</button>
+            </div>
+        </div>
+       </section>
+    </body>
+</html> 
