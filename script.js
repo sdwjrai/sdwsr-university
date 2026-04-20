@@ -1,4 +1,4 @@
-🚀 Complete JavaScript (script.js)
+// Complete JavaScript (script.js)
 // ========================================
 // SDWSR UNIVERSITY - MAIN APPLICATION
 // ========================================
