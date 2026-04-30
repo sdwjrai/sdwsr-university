@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - SDWSR University</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="logo">
+                <h2>🎓 SDWSR University</h2>
+                <p class="motto">Admin Panel</p>
+            </div>
+            <ul class="nav-links">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="courses.html">Courses</a></li>
+                <li><a href="register.html">Register</a></li>
+                <li><a href="admin.html">Admin</a></li>
+                <li><a href="supabase.html">Supabase</a></li>
+                <li><a href="react.html">React</a></li>
+                <li><a href="postgre.html">PostgreSQL</a></li>
+                <li><a href="cplusplus.html">C++</a></li>
+                <li><a href="web.html">Web Dev</a></li>
+                <li><a href="sdwjr.html">SDWJR</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <main class="container">
+        <h1>🔐 Admin Dashboard</h1>
+        
+        <div id="loginSection" class="admin-login">
+            <div class="card">
+                <h2>Admin Login</h2>
+                <input type="password" id="adminPassword" placeholder="Enter admin password">
+                <button onclick="adminLogin()" class="cta-button">Login</button>
+                <p class="hint">Hint: Use password "sdwsr2025"</p>
+            </div>
+        </div>
+        
+        <div id="adminPanel" style="display: none;">
+            <div class="admin-tabs">
+                <button class="tab-btn active" data-tab="students">📋 Students</button>
+                <button class="tab-btn" data-tab="courses">📚 Courses</button>
+                <button class="tab-btn" data-tab="enrollments">📝 Enrollments</button>
+                <button class="tab-btn" data-tab="addCourse">➕ Add Course</button>
+            </div>
+            
+            <div id="studentsTab" class="tab-content">
+                <h2>Registered Students</h2>
+                <div id="studentsList" class="data-table">
+                    <div class="loading">Loading students...</div>
+                </div>
+            </div>
+            
+            <div id="coursesTab" class="tab-content" style="display: none;">
+                <h2>Available Courses</h2>
+                <div id="adminCoursesList" class="data-table">
+                    <div class="loading">Loading courses...</div>
+                </div>
+            </div>
+            
+            <div id="enrollmentsTab" class="tab-content" style="display: none;">
+                <h2>Student Enrollments</h2>
+                <div id="enrollmentsList" class="data-table">
+                    <div class="loading">Loading enrollments...</div>
+                </div>
+            </div>
+            
+            <div id="addCourseTab" class="tab-content" style="display: none;">
+                <h2>Add New Course</h2>
+                <div class="form-card">
+                    <div class="form-group">
+                        <label>Course Title</label>
+                        <input type="text" id="newCourseTitle" placeholder="e.g., Full-Stack Web Development">
+                    </div>
+                    <div class="form-group">
+                        <label>Description</label>
+                        <textarea id="newCourseDesc" rows="3" placeholder="Course description..."></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Level</label>
+                        <select id="newCourseLevel">
+                            <option value="beginner">Beginner</option>
+                            <option value="intermediate">Intermediate</option>
+                            <option value="advanced">Advanced</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Duration (weeks)</label>
+                        <input type="number" id="newCourseDuration" value="8">
+                    </div>
+                    <div class="form-group">
+                        <label>Instructor</label>
+                        <input type="text" id="newCourseInstructor" value="SDWSR Faculty">
+                    </div>
+                    <button onclick="addNewCourse()" class="cta-button">Add Course</button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <div class="footer-content">
+            <div>
+                <h3>SDWSR University</h3>
+                <p>Free the mind with free education at S.U.D</p>
+            </div>
+            <div>
+                <h4>Contact</h4>
+                <p>📞 (347) 640-4912</p>
+                <p>📧 sdwsrsdwjr@gmail.com</p>
+            </div>
+        </div>
+        <div class="copyright">
+            <p>© 2026 ALL RIGHTS RESERVED</p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="script.js"></script>
+</body>
+</html>

@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register - SDWSR University</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="logo">
+                <h2>🎓 SDWSR University</h2>
+                <p class="motto">Free the mind with free education</p>
+            </div>
+            <ul class="nav-links">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="courses.html">Courses</a></li>
+                <li><a href="register.html">Register</a></li>
+                <li><a href="admin.html">Admin</a></li>
+                <li><a href="supabase.html">Supabase</a></li>
+                <li><a href="react.html">React</a></li>
+                <li><a href="postgre.html">PostgreSQL</a></li>
+                <li><a href="cplusplus.html">C++</a></li>
+                <li><a href="web.html">Web Dev</a></li>
+                <li><a href="sdwjr.html">SDWJR</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <main class="container">
+        <div class="register-container">
+            <h1>📝 Student Registration</h1>
+            <p>Join the SDWSR University community today!</p>
+            
+            <form id="registrationForm">
+                <div class="form-group">
+                    <label>Full Name *</label>
+                    <input type="text" id="fullName" required>
+                </div>
+                
+                <div class="form-group">
+                    <label>Email Address *</label>
+                    <input type="email" id="email" required>
+                </div>
+                
+                <div class="form-group">
+                    <label>Date of Birth</label>
+                    <input type="date" id="dob">
+                </div>
+                
+                <div class="form-group">
+                    <label>Country</label>
+                    <select id="country">
+                        <option value="USA">United States</option>
+                        <option value="Liberia">Liberia</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label>Course Interest</label>
+                    <select id="courseInterest">
+                        <option value="">Select a course</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label>How did you hear about us?</label>
+                    <select id="referral">
+                        <option value="social">Social Media</option>
+                        <option value="friend">Friend/Family</option>
+                        <option value="search">Search Engine</option>
+                        <option value="other">Other</option>
+                    </select>
+                </div>
+                
+                <button type="submit" class="cta-button">Register Now →</button>
+            </form>
+            
+            <div id="successMessage" class="success-message" style="display: none;">
+                <h3>✅ Registration Successful!</h3>
+                <p>Welcome to SDWSR University! Check your email for next steps.</p>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <div class="footer-content">
+            <div>
+                <h3>SDWSR University</h3>
+                <p>Free the mind with free education at S.U.D</p>
+            </div>
+            <div>
+                <h4>Contact</h4>
+                <p>📞 (347) 640-4912</p>
+                <p>📧 sdwsrsdwjr@gmail.com</p>
+            </div>
+        </div>
+        <div class="copyright">
+            <p>© 2026 ALL RIGHTS RESERVED</p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="script.js"></script>
+</body>
+</html>

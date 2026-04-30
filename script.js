@@ -1,501 +1,587 @@
-// Complete JavaScript (script.js)
-// ========================================
-// SDWSR UNIVERSITY - MAIN APPLICATION
-// ========================================
+// ============================================
+// SDWSR UNIVERSITY - DATABASE CONNECTION
+// REPLACE WITH YOUR SUPABASE KEYS!
+// ============================================
 
-// Supabase Configuration
-const SUPABASE_URL = 'https://YOUR_PROJECT.supabase.co';  // Replace with your URL
-const SUPABASE_ANON_KEY = 'YOUR_ANON_KEY';  // Replace with your key
+// ⚠️ IMPORTANT: Get these from Supabase Dashboard → Project Settings → API
+const SUPABASE_URL = 'https://YOUR_PROJECT.supabase.co';  // ← CHANGE THIS
+const SUPABASE_ANON_KEY = 'YOUR_ANON_KEY';  // ← CHANGE THIS
 
-let supabase = null;
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-// Initialize Supabase
-function initSupabase() {
-    if (typeof window.supabase !== 'undefined' && SUPABASE_URL !== 'YOUR_PROJECT.supabase.co') {
-        supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-        console.log('✅ Supabase initialized');
-    } else {
-        console.log('⚠️ Supabase not configured - using local storage only');
-    }
+// ============================================
+// GLOBAL VARIABLES
+// ============================================
+let currentCourses = [];
+let currentFilter = 'all';
+
+// ============================================
+// HELPER FUNCTIONS (Moved to top)
+// ============================================
+function escapeHtml(str) {
+    if (!str) return '';
+    return str
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
 }
 
-// ========================================
-// USER MANAGEMENT
-// ========================================
-
-let currentUser = null;
-
-function checkAuth() {
-    const savedUser = localStorage.getItem('sdwsr_user');
-    if (savedUser) {
-        currentUser = JSON.parse(savedUser);
-        updateAuthUI();
-    }
-}
-
-function updateAuthUI() {
-    const authBtn = document.getElementById('authBtn');
-    if (currentUser) {
-        authBtn.textContent = `👤 ${currentUser.name || currentUser.email}`;
-    } else {
-        authBtn.textContent = 'Login';
-    }
-}
-
-function showLoginModal() {
-    const modal = document.getElementById('loginModal');
-    modal.style.display = 'flex';
-}
-
-function closeLoginModal() {
-    const modal = document.getElementById('loginModal');
-    modal.style.display = 'none';
-}
-
-function handleLogin(email, password) {
-    // Demo login - in production, use Supabase Auth
-    currentUser = { email: email, name: email.split('@')[0] };
-    localStorage.setItem('sdwsr_user', JSON.stringify(currentUser));
-    updateAuthUI();
-    closeLoginModal();
-    showNotification('Welcome back, ' + currentUser.name + '! 🎉');
-}
-
-function showSignup() {
-    alert('Sign up functionality - In production, this would create a new user in Supabase Auth');
-}
-
-// ========================================
-// COURSE MANAGEMENT
-// ========================================
-
-const courses = {
-    'ai-tech': {
-        title: 'AI & Technology',
-        description: 'Master Artificial Intelligence and Machine Learning',
-        modules: 24,
-        duration: '8 weeks',
-        progress: 65
-    },
-    'finance': {
-        title: 'Finance & Analytics',
-        description: 'Financial modeling and investment strategies',
-        modules: 20,
-        duration: '6 weeks',
-        progress: 45
-    },
-    'programming': {
-        title: 'Programming',
-        description: 'Python, Java, C++ and more',
-        modules: 30,
-        duration: '10 weeks',
-        progress: 30
-    },
-    'databases': {
-        title: 'Databases',
-        description: 'SQL, NoSQL, PostgreSQL, MongoDB',
-        modules: 18,
-        duration: '6 weeks',
-        progress: 25
-    },
-    'webdev': {
-        title: 'Web Development',
-        description: 'HTML, CSS, JavaScript, React',
-        modules: 22,
-        duration: '8 weeks',
-        progress: 40
-    },
-    'datascience': {
-        title: 'Data Science',
-        description: 'Statistics, Visualization, Big Data',
-        modules: 20,
-        duration: '8 weeks',
-        progress: 15
-    }
-};
-
-function openCourse(courseId) {
-    const course = courses[courseId];
-    if (!course) return;
-    
-    // Save current course to localStorage
-    localStorage.setItem('current_course', courseId);
-    
-    // Show course modal or redirect
-    showCourseModal(course);
-}
-
-function showCourseModal(course) {
-    const modalHtml = `
-        <div class="course-modal">
-            <div class="course-modal-content">
-                <span class="close-modal">&times;</span>
-                <h2>${course.title}</h2>
-                <p>${course.description}</p>
-                <div class="course-details">
-                    <div>📚 ${course.modules} Modules</div>
-                    <div>⏱️ ${course.duration}</div>
-                    <div>🏆 Certificate Included</div>
-                </div>
-                <div class="progress-section">
-                    <label>Your Progress: ${course.progress}%</label>
-                    <div class="progress-bar">
-                        <div class="progress" style="width: ${course.progress}%"></div>
-                    </div>
-                </div>
-                <button class="btn-primary" onclick="startCourse('${course.title}')">Start Learning →</button>
-            </div>
-        </div>
-    `;
-    
-    // Remove existing modal if any
-    const existingModal = document.querySelector('.course-modal');
-    if (existingModal) existingModal.remove();
-    
-    // Add new modal
-    document.body.insertAdjacentHTML('beforeend', modalHtml);
-    
-    // Add close functionality
-    const closeBtn = document.querySelector('.close-modal');
-    closeBtn.onclick = () => document.querySelector('.course-modal').remove();
-}
-
-function startCourse(courseTitle) {
-    alert(`Starting course: ${courseTitle}\n\nIn the full version, this would load interactive lessons, quizzes, and track progress in Supabase!`);
-    document.querySelector('.course-modal')?.remove();
-}
-
-// ========================================
-// AI ASSISTANT
-// ========================================
-
-const aiResponses = {
-    'what is ai': 'Artificial Intelligence (AI) is the simulation of human intelligence in machines that are programmed to think and learn.',
-    'machine learning': 'Machine Learning is a subset of AI that enables systems to learn and improve from experience without being explicitly programmed.',
-    'neural network': 'Neural networks are computing systems inspired by biological neural networks that constitute animal brains.',
-    'deep learning': 'Deep Learning uses multiple layers to progressively extract higher-level features from raw input.',
-    'nlp': 'Natural Language Processing helps computers understand, interpret and manipulate human language.',
-    'computer vision': 'Computer Vision enables computers to derive meaningful information from digital images and videos.',
-    'default': "I'm your AI learning assistant! Ask me about: AI, Machine Learning, Neural Networks, Deep Learning, NLP, or Computer Vision!"
-};
-
-function askAI() {
-    const question = document.getElementById('aiQuestion').value.toLowerCase();
-    const output = document.getElementById('aiOutput');
-    
-    let response = aiResponses.default;
-    for (const [key, value] of Object.entries(aiResponses)) {
-        if (question.includes(key)) {
-            response = value;
-            break;
-        }
-    }
-    
-    output.innerHTML += `
-        <div class="chat-message user">
-            <strong>You:</strong> ${question}
-        </div>
-        <div class="chat-message ai">
-            <strong>🤖 AI:</strong> ${response}
-        </div>
-    `;
-    
-    document.getElementById('aiQuestion').value = '';
-    output.scrollTop = output.scrollHeight;
-    
-    // Add XP for asking AI
-    addXP(5);
-}
-
-// ========================================
-// GAMIFICATION SYSTEM
-// ========================================
-
-let userXP = parseInt(localStorage.getItem('sdwsr_xp') || '0');
-let userLevel = parseInt(localStorage.getItem('sdwsr_level') || '1');
-
-function addXP(amount) {
-    userXP += amount;
-    const xpNeeded = userLevel * 100;
-    
-    if (userXP >= xpNeeded) {
-        userLevel++;
-        userXP -= xpNeeded;
-        showNotification(`🎉 LEVEL UP! You reached Level ${userLevel}! 🎉`);
-    }
-    
-    localStorage.setItem('sdwsr_xp', userXP);
-    localStorage.setItem('sdwsr_level', userLevel);
-    updateDashboard();
-}
-
-function updateDashboard() {
-    const xpDisplay = document.getElementById('xpDisplay');
-    const levelDisplay = document.getElementById('levelDisplay');
-    if (xpDisplay) xpDisplay.textContent = userXP;
-    if (levelDisplay) levelDisplay.textContent = userLevel;
-}
-
-// ========================================
-// NOTIFICATION SYSTEM
-// ========================================
-
-function showNotification(message, type = 'success') {
-    const notification = document.createElement('div');
-    notification.className = `notification notification-${type}`;
-    notification.innerHTML = message;
-    notification.style.cssText = `
-        position: fixed;
-        bottom: 20px;
-        right: 20px;
-        background: var(--success);
-        color: white;
-        padding: 1rem 1.5rem;
-        border-radius: 12px;
-        z-index: 3000;
-        animation: slideIn 0.3s ease;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-    `;
-    
-    document.body.appendChild(notification);
-    setTimeout(() => notification.remove(), 3000);
-}
-
-// ========================================
-// DARK MODE TOGGLE
-// ========================================
-
-function initDarkMode() {
-    const savedTheme = localStorage.getItem('sdwsr_theme');
-    if (savedTheme === 'dark') {
-        document.documentElement.setAttribute('data-theme', 'dark');
-        document.getElementById('themeToggle').textContent = '☀️';
-    }
-    
-    document.getElementById('themeToggle').addEventListener('click', () => {
-        const currentTheme = document.documentElement.getAttribute('data-theme');
-        if (currentTheme === 'dark') {
-            document.documentElement.removeAttribute('data-theme');
-            localStorage.setItem('sdwsr_theme', 'light');
-            document.getElementById('themeToggle').textContent = '🌙';
-        } else {
-            document.documentElement.setAttribute('data-theme', 'dark');
-            localStorage.setItem('sdwsr_theme', 'dark');
-            document.getElementById('themeToggle').textContent = '☀️';
-        }
-    });
-}
-
-// ========================================
-// MOBILE MENU
-// ========================================
-
-function initMobileMenu() {
-    const menuBtn = document.getElementById('mobileMenuBtn');
-    const navMenu = document.getElementById('navMenu');
-    
-    if (menuBtn) {
-        menuBtn.addEventListener('click', () => {
-            navMenu.classList.toggle('active');
-            menuBtn.classList.toggle('active');
-        });
-    }
-}
-
-// ========================================
-// SCROLL SPY (Active Nav Link)
-// ========================================
-
-function initScrollSpy() {
-    const sections = document.querySelectorAll('section[id]');
-    const navLinks = document.querySelectorAll('.nav-link');
-    
-    window.addEventListener('scroll', () => {
-        let current = '';
-        const scrollPosition = window.scrollY + 100;
-        
-        sections.forEach(section => {
-            const sectionTop = section.offsetTop;
-            const sectionHeight = section.offsetHeight;
-            if (scrollPosition >= sectionTop && scrollPosition < sectionTop + sectionHeight) {
-                current = section.getAttribute('id');
-            }
-        });
-        
-        navLinks.forEach(link => {
-            link.classList.remove('active');
-            if (link.getAttribute('href') === `#${current}`) {
-                link.classList.add('active');
-            }
-        });
-    });
-}
-
-// ========================================
-// STOCK TICKER SIMULATION
-// ========================================
-
-function initStockTicker() {
-    const stocks = [
-        { symbol: 'AAPL', price: 175.32, change: 2.3 },
-        { symbol: 'GOOGL', price: 138.45, change: 1.2 },
-        { symbol: 'MSFT', price: 378.92, change: 0.8 },
-        { symbol: 'TSLA', price: 245.67, change: -1.5 },
-        { symbol: 'AMZN', price: 145.23, change: 0.5 },
-        { symbol: 'META', price: 325.67, change: 1.8 }
-    ];
-    
-    setInterval(() => {
-        stocks.forEach(stock => {
-            const change = (Math.random() - 0.5) * 4;
-            stock.price += change;
-            stock.change = change;
-        });
-        
-        const ticker = document.getElementById('stockTicker');
-        if (ticker) {
-            ticker.innerHTML = stocks.map(stock => `
-                <div class="stock">
-                    ${stock.symbol}: $${stock.price.toFixed(2)} 
-                    <span class="${stock.change >= 0 ? 'positive' : 'negative'}">
-                        ${stock.change >= 0 ? '+' : ''}${stock.change.toFixed(1)}%
-                    </span>
-                </div>
-            `).join('');
-        }
-    }, 5000);
-}
-
-// ========================================
-// SCROLL TO SECTION
-// ========================================
-
-function scrollToSection(sectionId) {
-    const section = document.getElementById(sectionId);
-    if (section) {
-        section.scrollIntoView({ behavior: 'smooth' });
-    }
-}
-
-function showDemo() {
-    showNotification('Demo video coming soon! 🎥', 'info');
-}
-
-// ========================================
-// ANALYTICS TRACKING (with Supabase)
-// ========================================
-
-async function trackEvent(eventName, eventData) {
-    if (supabase) {
-        try {
-            const { error } = await supabase
-                .from('analytics')
-                .insert([{
-                    event: eventName,
-                    data: eventData,
-                    user_id: currentUser?.email || 'anonymous',
-                    timestamp: new Date()
-                }]);
-            
-            if (error) console.error('Analytics error:', error);
-        } catch (e) {
-            console.log('Analytics disabled');
-        }
-    }
-}
-
-// ========================================
-// INITIALIZATION
-// ========================================
-
+// ============================================
+// PAGE LOAD INITIALIZATION
+// ============================================
 document.addEventListener('DOMContentLoaded', () => {
-    initSupabase();
-    checkAuth();
-    initDarkMode();
-    initMobileMenu();
-    initScrollSpy();
-    initStockTicker();
-    updateDashboard();
+    loadStats();
+    loadCourses();
+    loadCourseSelect();
+    setupFilterButtons();
+    setupAdminTabs();
     
-    // Track page view
-    trackEvent('page_view', { page: window.location.pathname });
-    
-    console.log('🎓 SDWSR University Platform Initialized!');
-    
-    // Add welcome notification
-    setTimeout(() => {
-        showNotification('Welcome to SDWSR University! Start your learning journey today! 🎓', 'success');
-    }, 1000);
+    const regForm = document.getElementById('registrationForm');
+    if (regForm) {
+        regForm.addEventListener('submit', registerStudent);
+    }
 });
 
-// Add CSS animations
-const style = document.createElement('style');
-style.textContent = `
-    @keyframes slideIn {
-        from { transform: translateX(100%); opacity: 0; }
-        to { transform: translateX(0); opacity: 1; }
+// ============================================
+// HOMEPAGE STATS
+// ============================================
+async function loadStats() {
+    try {
+        const { count: studentCount, error: studentError } = await supabase
+            .from('students')
+            .select('*', { count: 'exact', head: true });
+        
+        const { count: courseCount, error: courseError } = await supabase
+            .from('courses')
+            .select('*', { count: 'exact', head: true });
+        
+        if (!studentError && document.getElementById('studentCount')) {
+            document.getElementById('studentCount').textContent = studentCount || 0;
+        }
+        
+        if (!courseError && document.getElementById('courseCount')) {
+            document.getElementById('courseCount').textContent = courseCount || 0;
+        }
+    } catch (error) {
+        console.error('Error loading stats:', error);
+    }
+}
+
+// ============================================
+// COURSES PAGE FUNCTIONS
+// ============================================
+async function loadCourses() {
+    try {
+        const { data, error } = await supabase
+            .from('courses')
+            .select('*')
+            .order('id');
+        
+        if (error) throw error;
+        
+        currentCourses = data || [];
+        renderCourses();
+    } catch (error) {
+        console.error('Error loading courses:', error);
+        const grid = document.getElementById('coursesGrid');
+        if (grid) grid.innerHTML = '<div class="loading">Error loading courses. Please try again.</div>';
+    }
+}
+
+function renderCourses() {
+    const grid = document.getElementById('coursesGrid');
+    if (!grid) return;
+    
+    let filteredCourses = currentCourses;
+    if (currentFilter !== 'all') {
+        filteredCourses = currentCourses.filter(c => c.level === currentFilter);
     }
     
-    .chat-message {
-        margin-bottom: 10px;
-        padding: 8px;
-        border-radius: 8px;
+    if (filteredCourses.length === 0) {
+        grid.innerHTML = '<div class="loading">No courses found.</div>';
+        return;
     }
     
-    .chat-message.user {
-        background: var(--primary);
-        color: white;
+    grid.innerHTML = filteredCourses.map(course => `
+        <div class="course-card">
+            <div class="content">
+                <h3>${escapeHtml(course.title)}</h3>
+                <span class="course-level level-${course.level}">${course.level.toUpperCase()}</span>
+                <p>${escapeHtml(course.description || 'No description available.')}</p>
+                <p><strong>Duration:</strong> ${course.duration || 8} weeks</p>
+                <p><strong>Instructor:</strong> ${escapeHtml(course.instructor || 'SDWSR Faculty')}</p>
+                <button class="enroll-btn" onclick="openEnrollModal(${course.id}, '${escapeHtml(course.title)}')">Enroll Now →</button>
+            </div>
+        </div>
+    `).join('');
+}
+
+function setupFilterButtons() {
+    const buttons = document.querySelectorAll('.filter-btn');
+    if (buttons.length === 0) return;
+    
+    buttons.forEach(btn => {
+        btn.addEventListener('click', () => {
+            currentFilter = btn.getAttribute('data-filter');
+            buttons.forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            renderCourses();
+        });
+    });
+}
+
+// ============================================
+// ENROLLMENT MODAL
+// ============================================
+let selectedCourseId = null;
+let selectedCourseName = '';
+
+function openEnrollModal(courseId, courseName) {
+    selectedCourseId = courseId;
+    selectedCourseName = courseName;
+    
+    const modal = document.getElementById('enrollModal');
+    const courseNameSpan = document.getElementById('modalCourseName');
+    
+    if (courseNameSpan) courseNameSpan.textContent = `Course: ${courseName}`;
+    if (modal) modal.style.display = 'flex';
+}
+
+function closeModal() {
+    const modal = document.getElementById('enrollModal');
+    if (modal) modal.style.display = 'none';
+    
+    const nameInput = document.getElementById('studentName');
+    const emailInput = document.getElementById('studentEmail');
+    if (nameInput) nameInput.value = '';
+    if (emailInput) emailInput.value = '';
+}
+
+async function submitEnrollment() {
+    const studentName = document.getElementById('studentName')?.value.trim();
+    const studentEmail = document.getElementById('studentEmail')?.value.trim();
+    
+    if (!studentName || !studentEmail) {
+        alert('Please enter both name and email!');
+        return;
     }
     
-    .chat-message.ai {
-        background: var(--dark);
+    try {
+        let { data: existingStudent, error: findError } = await supabase
+            .from('students')
+            .select('id')
+            .eq('email', studentEmail)
+            .maybeSingle();
+        
+        let studentId;
+        
+        if (!existingStudent) {
+            const { data: newStudent, error: createError } = await supabase
+                .from('students')
+                .insert([{
+                    name: studentName,
+                    email: studentEmail,
+                    registered_at: new Date()
+                }])
+                .select()
+                .single();
+            
+            if (createError) throw createError;
+            studentId = newStudent.id;
+        } else {
+            studentId = existingStudent.id;
+        }
+        
+        const { error: enrollError } = await supabase
+            .from('enrollments')
+            .insert([{
+                student_id: studentId,
+                course_id: selectedCourseId,
+                enrolled_at: new Date()
+            }]);
+        
+        if (enrollError) throw enrollError;
+        
+        alert(`✅ Successfully enrolled in ${selectedCourseName}!`);
+        closeModal();
+        loadStats();
+        
+    } catch (error) {
+        console.error('Enrollment error:', error);
+        alert('Error enrolling. Please try again.');
+    }
+}
+
+// ============================================
+// REGISTRATION FORM
+// ============================================
+async function loadCourseSelect() {
+    const select = document.getElementById('courseInterest');
+    if (!select) return;
+    
+    try {
+        const { data, error } = await supabase
+            .from('courses')
+            .select('id, title');
+        
+        if (error) throw error;
+        
+        select.innerHTML = '<option value="">Select a course</option>' +
+            data.map(c => `<option value="${c.id}">${escapeHtml(c.title)}</option>`).join('');
+    } catch (error) {
+        console.error('Error loading courses:', error);
+    }
+}
+
+async function registerStudent(event) {
+    event.preventDefault();
+    
+    const fullName = document.getElementById('fullName')?.value.trim();
+    const email = document.getElementById('email')?.value.trim();
+    const dob = document.getElementById('dob')?.value;
+    const country = document.getElementById('country')?.value;
+    const courseInterest = document.getElementById('courseInterest')?.value;
+    const referral = document.getElementById('referral')?.value;
+    
+    if (!fullName || !email) {
+        alert('Please fill in all required fields!');
+        return;
     }
     
-    .course-modal {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(0,0,0,0.9);
-        z-index: 2000;
-        display: flex;
-        justify-content: center;
-        align-items: center;
+    try {
+        const { data: existing, error: checkError } = await supabase
+            .from('students')
+            .select('id')
+            .eq('email', email)
+            .maybeSingle();
+        
+        if (existing) {
+            alert('This email is already registered!');
+            return;
+        }
+        
+        const { data: newStudent, error: insertError } = await supabase
+            .from('students')
+            .insert([{
+                name: fullName,
+                email: email,
+                dob: dob || null,
+                country: country,
+                referral_source: referral,
+                registered_at: new Date()
+            }])
+            .select()
+            .single();
+        
+        if (insertError) throw insertError;
+        
+        if (courseInterest) {
+            await supabase
+                .from('enrollments')
+                .insert([{
+                    student_id: newStudent.id,
+                    course_id: parseInt(courseInterest),
+                    enrolled_at: new Date()
+                }]);
+        }
+        
+        const form = document.getElementById('registrationForm');
+        const successMsg = document.getElementById('successMessage');
+        if (form) form.style.display = 'none';
+        if (successMsg) successMsg.style.display = 'block';
+        
+        loadStats();
+        
+    } catch (error) {
+        console.error('Registration error:', error);
+        alert('Error during registration. Please try again.');
+    }
+}
+
+// ============================================
+// ADMIN FUNCTIONS
+// ============================================
+function adminLogin() {
+    const password = document.getElementById('adminPassword')?.value;
+    
+    if (password === 'sdwsr2025') {
+        const loginSection = document.getElementById('loginSection');
+        const adminPanel = document.getElementById('adminPanel');
+        
+        if (loginSection) loginSection.style.display = 'none';
+        if (adminPanel) adminPanel.style.display = 'block';
+        
+        loadAdminData();
+    } else {
+        alert('Incorrect password!');
+    }
+}
+
+function setupAdminTabs() {
+    const tabButtons = document.querySelectorAll('.tab-btn');
+    if (tabButtons.length === 0) return;
+    
+    tabButtons.forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            const tabName = btn.getAttribute('data-tab');
+            showTab(tabName, btn);
+        });
+    });
+}
+
+function showTab(tabName, activeBtn) {
+    const tabs = ['students', 'courses', 'enrollments', 'addCourse'];
+    tabs.forEach(tab => {
+        const element = document.getElementById(`${tab}Tab`);
+        if (element) element.style.display = 'none';
+    });
+    
+    const selectedTab = document.getElementById(`${tabName}Tab`);
+    if (selectedTab) selectedTab.style.display = 'block';
+    
+    const allBtns = document.querySelectorAll('.tab-btn');
+    allBtns.forEach(btn => btn.classList.remove('active'));
+    
+    if (activeBtn) {
+        activeBtn.classList.add('active');
+    } else {
+        const matchingBtn = document.querySelector(`.tab-btn[data-tab="${tabName}"]`);
+        if (matchingBtn) matchingBtn.classList.add('active');
+    }
+}
+
+async function loadAdminData() {
+    await loadAllStudents();
+    await loadAllCoursesAdmin();
+    await loadAllEnrollments();
+}
+
+async function loadAllStudents() {
+    try {
+        const { data, error } = await supabase
+            .from('students')
+            .select('*')
+            .order('registered_at', { ascending: false });
+        
+        if (error) throw error;
+        
+        const studentsList = document.getElementById('studentsList');
+        if (!studentsList) return;
+        
+        if (!data || data.length === 0) {
+            studentsList.innerHTML = '<div class="loading">No students registered yet.</div>';
+            return;
+        }
+        
+        studentsList.innerHTML = `
+            <table>
+                <thead>
+                    <tr><th>ID</th><th>Name</th><th>Email</th><th>Registered</th><th>Action</th></tr>
+                </thead>
+                <tbody>
+                    ${data.map(s => `
+                        <tr>
+                            <td>${s.id}</td>
+                            <td>${escapeHtml(s.name)}</td>
+                            <td>${escapeHtml(s.email)}</td>
+                            <td>${new Date(s.registered_at).toLocaleDateString()}</td>
+                            <td><button class="delete-btn" onclick="deleteStudent(${s.id})">Delete</button></td>
+                        </tr>
+                    `).join('')}
+                </tbody>
+            </table>
+        `;
+    } catch (error) {
+        console.error('Error loading students:', error);
+        const studentsList = document.getElementById('studentsList');
+        if (studentsList) {
+            studentsList.innerHTML = '<div class="loading">Error loading students.</div>';
+        }
+    }
+}
+
+async function loadAllCoursesAdmin() {
+    try {
+        const { data, error } = await supabase
+            .from('courses')
+            .select('*')
+            .order('id');
+        
+        if (error) throw error;
+        
+        const coursesList = document.getElementById('adminCoursesList');
+        if (!coursesList) return;
+        
+        if (!data || data.length === 0) {
+            coursesList.innerHTML = '<div class="loading">No courses available.</div>';
+            return;
+        }
+        
+        coursesList.innerHTML = `
+            <table>
+                <thead>
+                    <tr><th>ID</th><th>Title</th><th>Level</th><th>Duration</th><th>Action</th></tr>
+                </thead>
+                <tbody>
+                    ${data.map(c => `
+                        <tr>
+                            <td>${c.id}</td>
+                            <td>${escapeHtml(c.title)}</td>
+                            <td>${c.level}</td>
+                            <td>${c.duration} weeks</td>
+                            <td><button class="delete-btn" onclick="deleteCourse(${c.id})">Delete</button></td>
+                        </tr>
+                    `).join('')}
+                </tbody>
+            </table>
+        `;
+    } catch (error) {
+        console.error('Error loading courses:', error);
+    }
+}
+
+async function loadAllEnrollments() {
+    try {
+        const { data, error } = await supabase
+            .from('enrollments')
+            .select(`
+                *,
+                students (name, email),
+                courses (title)
+            `)
+            .order('enrolled_at', { ascending: false });
+        
+        if (error) throw error;
+        
+        const enrollmentsList = document.getElementById('enrollmentsList');
+        if (!enrollmentsList) return;
+        
+        if (!data || data.length === 0) {
+            enrollmentsList.innerHTML = '<div class="loading">No enrollments yet.</div>';
+            return;
+        }
+        
+        enrollmentsList.innerHTML = `
+            <table>
+                <thead>
+                    <tr><th>Student</th><th>Course</th><th>Enrolled Date</th><th>Action</th></tr>
+                </thead>
+                <tbody>
+                    ${data.map(e => `
+                        <tr>
+                            <td>${escapeHtml(e.students?.name || 'Unknown')}<br><small>${escapeHtml(e.students?.email || '')}</small></td>
+                            <td>${escapeHtml(e.courses?.title || 'Unknown')}</td>
+                            <td>${new Date(e.enrolled_at).toLocaleDateString()}</td>
+                            <td><button class="delete-btn" onclick="deleteEnrollment(${e.id})">Delete</button></td>
+                        </tr>
+                    `).join('')}
+                </tbody>
+            </table>
+        `;
+    } catch (error) {
+        console.error('Error loading enrollments:', error);
+    }
+}
+
+async function addNewCourse() {
+    const title = document.getElementById('newCourseTitle')?.value.trim();
+    const description = document.getElementById('newCourseDesc')?.value.trim();
+    const level = document.getElementById('newCourseLevel')?.value;
+    let duration = parseInt(document.getElementById('newCourseDuration')?.value);
+    const instructor = document.getElementById('newCourseInstructor')?.value.trim();
+    
+    if (!title) {
+        alert('Please enter a course title!');
+        return;
     }
     
-    .course-modal-content {
-        background: var(--dark);
-        padding: 2rem;
-        border-radius: 20px;
-        max-width: 500px;
-        width: 90%;
-        position: relative;
+    if (isNaN(duration) || duration < 1) {
+        duration = 8;
     }
     
-    .close-modal {
-        position: absolute;
-        top: 1rem;
-        right: 1rem;
-        font-size: 1.5rem;
-        cursor: pointer;
+    try {
+        const { error } = await supabase
+            .from('courses')
+            .insert([{
+                title: title,
+                description: description,
+                level: level,
+                duration: duration,
+                instructor: instructor || 'SDWSR Faculty'
+            }]);
+        
+        if (error) throw error;
+        
+        alert('Course added successfully!');
+        
+        const titleInput = document.getElementById('newCourseTitle');
+        const descInput = document.getElementById('newCourseDesc');
+        const durationInput = document.getElementById('newCourseDuration');
+        
+        if (titleInput) titleInput.value = '';
+        if (descInput) descInput.value = '';
+        if (durationInput) durationInput.value = '8';
+        
+        loadCourses();
+        loadAllCoursesAdmin();
+        loadStats();
+        
+    } catch (error) {
+        console.error('Error adding course:', error);
+        alert('Error adding course. Please try again.');
     }
-    
-    .course-details {
-        display: flex;
-        gap: 1rem;
-        margin: 1rem 0;
-        padding: 1rem 0;
-        border-top: 1px solid rgba(255,255,255,0.1);
-        border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+
+async function deleteStudent(studentId) {
+    if (confirm('Are you sure you want to delete this student?')) {
+        try {
+            await supabase.from('enrollments').delete().eq('student_id', studentId);
+            await supabase.from('students').delete().eq('id', studentId);
+            loadAdminData();
+            loadStats();
+            alert('Student deleted successfully!');
+        } catch (error) {
+            console.error('Error deleting student:', error);
+            alert('Error deleting student.');
+        }
     }
-    
-    .progress-section {
-        margin: 1rem 0;
+}
+
+async function deleteCourse(courseId) {
+    if (confirm('Are you sure you want to delete this course?')) {
+        try {
+            await supabase.from('enrollments').delete().eq('course_id', courseId);
+            await supabase.from('courses').delete().eq('id', courseId);
+            loadAdminData();
+            loadCourses();
+            loadStats();
+            alert('Course deleted successfully!');
+        } catch (error) {
+            console.error('Error deleting course:', error);
+            alert('Error deleting course.');
+        }
     }
-    
-    .notification-info {
-        background: var(--primary);
+}
+
+async function deleteEnrollment(enrollmentId) {
+    if (confirm('Are you sure you want to remove this enrollment?')) {
+        try {
+            await supabase.from('enrollments').delete().eq('id', enrollmentId);
+            loadAllEnrollments();
+            alert('Enrollment removed successfully!');
+        } catch (error) {
+            console.error('Error deleting enrollment:', error);
+            alert('Error deleting enrollment.');
+        }
     }
-`;
-document.head.appendChild(style);
+}
+
+// Close modal when clicking outside
+window.onclick = function(event) {
+    const modal = document.getElementById('enrollModal');
+    if (event.target === modal) {
+        closeModal();
+    }
+}
